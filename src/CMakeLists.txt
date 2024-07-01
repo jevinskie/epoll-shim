@@ -98,7 +98,7 @@ set(EPOLL_SHIM_SRCS
   timespec_util.c
 )
 
-add_library(epoll-shim SHARED ${EPOLL_SHIM_SRCS})
+add_library(epoll-shim STATIC ${EPOLL_SHIM_SRCS})
 if(NOT HAVE_EVENTFD)
   target_sources(epoll-shim PRIVATE eventfd.c eventfd_ctx.c)
 endif()
