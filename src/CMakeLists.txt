@@ -238,7 +238,7 @@ target_compile_options(epoll-shim PRIVATE ${EPOLL_SHIM_WARNING_FLAGS})
 
 #
 
-add_library(epoll-shim-interpose epoll_shim_interpose.c)
+add_library(epoll-shim-interpose SHARED epoll_shim_interpose.c)
 target_link_libraries(epoll-shim-interpose PUBLIC epoll-shim)
 target_compile_definitions(epoll-shim-interpose
                            PUBLIC EPOLL_SHIM_DISABLE_WRAPPER_MACROS)
