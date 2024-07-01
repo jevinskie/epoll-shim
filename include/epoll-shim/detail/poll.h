@@ -13,11 +13,13 @@ extern int epoll_shim_poll(struct pollfd *, nfds_t, int);
 
 extern int epoll_shim_ppoll(struct pollfd *, nfds_t, struct timespec const *,
     sigset_t const *);
+#ifndef COMPAT_PPOLL_H
 #ifdef EPOLL_SHIM_NO_VARIADICS
 #define ppoll(fds, nfds, tmo_p, sigmask) \
 	epoll_shim_ppoll((fds), (nfds), (tmo_p), (sigmask))
 #else
 #define ppoll(...) epoll_shim_ppoll(__VA_ARGS__)
+#endif
 #endif
 
 #endif

@@ -64,7 +64,7 @@ signalfd_ctx_init(SignalFDCtx *signalfd, int kq, sigset_t const *sigs)
 		goto out2;
 	}
 
-	for (int i = 1; i <= _SIG_MAXSIG; ++i) {
+	for (int i = 1; i <= (int)_SIG_MAXSIG; ++i) {
 		if (sigismember(&signalfd->sigs, i)) {
 			EV_SET(&kevs[n++], (unsigned int)i, EVFILT_SIGNAL,
 			    EV_ADD, 0, 0, 0);

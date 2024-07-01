@@ -8,6 +8,9 @@
 int compat_ppoll(struct pollfd fds[], nfds_t nfds,
     struct timespec const *restrict timeout, sigset_t const *restrict sigmask);
 #ifdef COMPAT_ENABLE_PPOLL
+#ifdef EPOLL_SHIM_DETAIL_POLL_H_
+#undef ppoll
+#endif
 #define ppoll compat_ppoll
 #endif
 

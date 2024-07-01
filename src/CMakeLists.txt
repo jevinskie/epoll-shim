@@ -88,15 +88,17 @@ add_compat_target(ppoll "APPLE")
 
 target_link_libraries(rwlock PUBLIC $<BUILD_INTERFACE:compat_enable_sem>)
 
-add_library(
-  epoll-shim
+set(EPOLL_SHIM_SRCS
   epoll_shim_ctx.c
   epoll.c
   epollfd_ctx.c
   kqueue_event.c
   signalfd.c
   signalfd_ctx.c
-  timespec_util.c)
+  timespec_util.c
+)
+
+add_library(epoll-shim SHARED ${EPOLL_SHIM_SRCS})
 if(NOT HAVE_EVENTFD)
   target_sources(epoll-shim PRIVATE eventfd.c eventfd_ctx.c)
 endif()
@@ -162,6 +164,77 @@ foreach(_header IN LISTS _headers)
 endforeach()
 
 set_target_properties(epoll-shim PROPERTIES SOVERSION 0)
+target_compile_options(epoll-shim PRIVATE ${EPOLL_SHIM_WARNING_FLAGS})
+
+#
+
+# add_library(epoll-shim-static STATIC ${EPOLL_SHIM_SRCS})
+# if(NOT HAVE_EVENTFD)
+#   target_sources(epoll-shim-static PRIVATE eventfd.c eventfd_ctx.c)
+# endif()
+# if(NOT HAVE_TIMERFD)
+#   target_sources(epoll-shim-static PRIVATE timerfd.c timerfd_ctx.c)
+# endif()
+# include(GenerateExportHeader)
+# generate_export_header(epoll-shim-static BASE_NAME epoll_shim)
+# target_link_libraries(
+#   epoll-shim-static
+#   PRIVATE Threads::Threads #
+#           $<BUILD_INTERFACE:queue-macros::queue-macros>
+#           $<BUILD_INTERFACE:tree-macros::tree-macros> #
+#           $<BUILD_INTERFACE:evfilt_timer_quirks>
+#           $<BUILD_INTERFACE:compat_enable_kqueue1>
+#           $<BUILD_INTERFACE:compat_enable_ppoll>
+#           $<BUILD_INTERFACE:compat_enable_itimerspec>
+#           $<BUILD_INTERFACE:compat_enable_sigops>
+#           $<BUILD_INTERFACE:rwlock>
+#           $<BUILD_INTERFACE:wrap>)
+# if(HAVE_TIMERFD)
+#   target_compile_definitions(epoll-shim-static PRIVATE HAVE_TIMERFD)
+# endif()
+# target_compile_definitions(epoll-shim-static PRIVATE EPOLL_SHIM_DISABLE_WRAPPER_MACROS)
+# target_include_directories(
+#   epoll-shim-static
+#   PRIVATE $<BUILD_INTERFACE:${CMAKE_CURRENT_BINARY_DIR}>
+#   PUBLIC $<BUILD_INTERFACE:${PROJECT_BINARY_DIR}/install-include>)
+
+# file(WRITE "${CMAKE_CURRENT_BINARY_DIR}/pollrdhup.c"
+#   [=[
+# #define _GNU_SOURCE
+# #include <poll.h>
+# int main() {
+#   printf("0x%x", POLLRDHUP);
+#   return 0;
+# }
+# ]=])
+# try_run(HAVE_POLLRDHUP_RUN_RESULT HAVE_POLLRDHUP
+#     "${CMAKE_CURRENT_BINARY_DIR}"
+#     "${CMAKE_CURRENT_BINARY_DIR}/pollrdhup.c"
+#     RUN_OUTPUT_VARIABLE POLLRDHUP_VALUE)
+# if(NOT HAVE_POLLRDHUP)
+#   set(POLLRDHUP_VALUE "0x2000")
+# endif()
+
+# set(_headers
+#     "epoll-shim/detail/common.h" #
+#     "epoll-shim/detail/poll.h" #
+#     "epoll-shim/detail/read.h" #
+#     "epoll-shim/detail/write.h" #
+#     "sys/epoll.h" #
+#     "sys/signalfd.h")
+# if(NOT HAVE_EVENTFD)
+#   list(APPEND _headers "sys/eventfd.h")
+# endif()
+# if(NOT HAVE_TIMERFD)
+#   list(APPEND _headers "sys/timerfd.h")
+# endif()
+# foreach(_header IN LISTS _headers)
+#   configure_file("${PROJECT_SOURCE_DIR}/include/${_header}"
+#                  "${PROJECT_BINARY_DIR}/install-include/${_header}")
+# endforeach()
+
+# set_target_properties(epoll-shim-static PROPERTIES SOVERSION 0)
+# target_compile_options(epoll-shim-static PRIVATE ${EPOLL_SHIM_WARNING_FLAGS})
 
 #
 

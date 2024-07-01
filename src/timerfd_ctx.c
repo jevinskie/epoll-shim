@@ -96,7 +96,7 @@ timerfd_ctx_get_monotonic_offset(struct timespec *monotonic_offset)
 	}
 #else
 	struct timeval boottime;
-	if (sysctl((int const[2]) { CTL_KERN, KERN_BOOTTIME }, 2, /**/
+	if (sysctl((int[2]) { CTL_KERN, KERN_BOOTTIME }, 2, /**/
 		&boottime, &(size_t) { sizeof(boottime) }, NULL, 0) < 0) {
 		return errno;
 	}

@@ -1,11 +1,15 @@
 cmake_minimum_required(VERSION 3.14)
 project(epoll-shim LANGUAGES C)
 
-option(BUILD_SHARED_LIBS "build libepoll-shim as shared lib" ON)
-option(ENABLE_COMPILER_WARNINGS "enable compiler warnings" OFF)
+# option(BUILD_SHARED_LIBS "build libepoll-shim as shared lib" ON)
+option(EPOLL_SHIM_ENABLE_COMPILER_WARNINGS "enable compiler warnings" ON)
 
-if(ENABLE_COMPILER_WARNINGS)
-  add_compile_options(
+if(APPLE)
+  set(CMAKE_OSX_ARCHITECTURES  arm64e arm64 x86_64 x86_64h)
+endif()
+
+if(EPOLL_SHIM_ENABLE_COMPILER_WARNINGS)
+  set(EPOLL_SHIM_WARNING_FLAGS
     "-Wall"
     "-Wextra"
     "-Wconversion"
@@ -49,10 +53,17 @@ add_library(${_namespace}::epoll-shim-interpose ALIAS epoll-shim-interpose)\n")
 
   include(GNUInstallDirs)
 
-  set(CMAKE_INSTALL_PKGCONFIGDIR
-      "libdata/pkgconfig"
-      CACHE PATH "Installation directory for pkgconfig (.pc) files")
-  mark_as_advanced(CMAKE_INSTALL_PKGCONFIGDIR)
+  if(NOT APPLE)
+    set(CMAKE_INSTALL_PKGCONFIGDIR
+        "libdata/pkgconfig"
+        CACHE PATH "Installation directory for pkgconfig (.pc) files")
+    mark_as_advanced(CMAKE_INSTALL_PKGCONFIGDIR)
+  else()
+    set(CMAKE_INSTALL_PKGCONFIGDIR
+        "lib/pkgconfig"
+        CACHE PATH "Installation directory for pkgconfig (.pc) files")
+    mark_as_advanced(CMAKE_INSTALL_PKGCONFIGDIR)
+  endif()
   set(CMAKE_INSTALL_CMAKEBASEDIR
       "${CMAKE_INSTALL_LIBDIR}/cmake/${PROJECT_NAME}"
       CACHE PATH "Installation directory for CMake config (.cmake) files")
@@ -67,6 +78,7 @@ add_library(${_namespace}::epoll-shim-interpose ALIAS epoll-shim-interpose)\n")
 
   set(CMAKE_INSTALL_INCLUDEDIR "${CMAKE_INSTALL_INCLUDEDIR}/libepoll-shim")
   install(
+    # TARGETS epoll-shim epoll-shim-static epoll-shim-interpose
     TARGETS epoll-shim epoll-shim-interpose
     EXPORT ${PROJECT_NAME}-targets
     LIBRARY
@@ -78,12 +90,12 @@ add_library(${_namespace}::epoll-shim-interpose ALIAS epoll-shim-interpose)\n")
     EXPORT ${PROJECT_NAME}-targets
     NAMESPACE "${_namespace}::"
     DESTINATION "${CMAKE_INSTALL_CMAKEBASEDIR}")
-  if(NOT BUILD_SHARED_LIBS)
-    set(_deps
-        "include(CMakeFindDependencyMacro)\n" #
-        "set(THREADS_PREFER_PTHREAD_FLAG ON)\n" #
-        "find_dependency(Threads)\n")
-  endif()
+  # if(NOT BUILD_SHARED_LIBS)
+  #   set(_deps
+  #       "include(CMakeFindDependencyMacro)\n" #
+  #       "set(THREADS_PREFER_PTHREAD_FLAG ON)\n" #
+  #       "find_dependency(Threads)\n")
+  # endif()
   file(
     WRITE "${PROJECT_BINARY_DIR}/${PROJECT_NAME}-config.cmake"
     ${_deps}

@@ -579,7 +579,7 @@ out:
 maybe_translate_rdhup:
 	if ((fd2_node->revents & EPOLLRDHUP) != 0 &&
 	    fd2_node->needs_rdhup_translation) {
-		fd2_node->revents &= ~EPOLLRDHUP;
+		fd2_node->revents &= ~(uint32_t)EPOLLRDHUP;
 		fd2_node->revents |= 0x2000;
 	}
 }
