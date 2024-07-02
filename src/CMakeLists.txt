@@ -165,7 +165,7 @@ set_target_properties(epoll-shim PROPERTIES SOVERSION 0)
 
 #
 
-add_library(epoll-shim-interpose epoll_shim_interpose.c)
+add_library(epoll-shim-interpose SHARED epoll_shim_interpose.c)
 target_link_libraries(epoll-shim-interpose PUBLIC epoll-shim)
 target_compile_definitions(epoll-shim-interpose
                            PUBLIC EPOLL_SHIM_DISABLE_WRAPPER_MACROS)
